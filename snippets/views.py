@@ -1,9 +1,27 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from django.contrib.auth.models import User
 from snippets.models import Snippet
-from snippets.serializers import SnippetSerializer
+from snippets.serializers import UserSerializer, SnippetSerializer
 
 
-class GenericSnippetView():
+class GenericUserView:
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class UserList(GenericUserView, ListCreateAPIView):
+    """
+    List all users, or create a new user.
+    """
+
+
+class UserDetail(GenericUserView, RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve, update or delete a user.
+    """
+
+
+class GenericSnippetView:
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
 
