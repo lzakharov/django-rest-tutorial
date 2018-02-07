@@ -3,8 +3,9 @@ from rest_framework.decorators import api_view
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.renderers import StaticHTMLRenderer
+from rest_framework import renderers
 from rest_framework import viewsets
+from rest_framework.decorators import detail_route
 from django.contrib.auth.models import User
 from snippets.models import Snippet
 from snippets.serializers import UserSerializer, SnippetSerializer
@@ -27,31 +28,22 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
 
 
-class SnippetHighlight(GenericAPIView):
-    queryset = Snippet.objects.all()
-    renderer_classes = (StaticHTMLRenderer,)
+class SnippetViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
 
-    def get(self, request, *args, **kwargs):
+    Additionally we also provide an extra `highlight` action.
+    """
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsOwnerOrReadOnly)
+
+    @detail_route(renderer_classes=[renderers.StaticHTMLRenderer])
+    def highlight(self, request, *args, **kwargs):
         snippet = self.get_object()
         return Response(snippet.highlighted)
 
-
-class GenericSnippetView(GenericAPIView):
-    queryset = Snippet.objects.all()
-    serializer_class = SnippetSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-
-class SnippetList(GenericSnippetView, ListCreateAPIView):
-    """
-    List all code snippets, or create a new snippet.
-    """
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
-
-
-class SnippetDetail(GenericSnippetView, RetrieveUpdateDestroyAPIView):
-    """
-    Retrieve, update or delete a code snippet.
-    """
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
