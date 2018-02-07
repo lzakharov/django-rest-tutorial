@@ -30,6 +30,8 @@ class SnippetList(GenericSnippetView, ListCreateAPIView):
     """
     List all code snippets, or create a new snippet.
     """
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
 class SnippetDetail(GenericSnippetView, RetrieveUpdateDestroyAPIView):
