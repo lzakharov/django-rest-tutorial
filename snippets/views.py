@@ -4,6 +4,7 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.renderers import StaticHTMLRenderer
+from rest_framework import viewsets
 from django.contrib.auth.models import User
 from snippets.models import Snippet
 from snippets.serializers import UserSerializer, SnippetSerializer
@@ -18,6 +19,14 @@ def api_root(request, format=None):
     })
 
 
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This viewset automatically provides `list` and `detail` actions.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
 class SnippetHighlight(GenericAPIView):
     queryset = Snippet.objects.all()
     renderer_classes = (StaticHTMLRenderer,)
@@ -25,23 +34,6 @@ class SnippetHighlight(GenericAPIView):
     def get(self, request, *args, **kwargs):
         snippet = self.get_object()
         return Response(snippet.highlighted)
-
-
-class GenericUserView(GenericAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class UserList(GenericUserView, ListCreateAPIView):
-    """
-    List all users, or create a new user.
-    """
-
-
-class UserDetail(GenericUserView, RetrieveUpdateDestroyAPIView):
-    """
-    Retrieve, update or delete a user.
-    """
 
 
 class GenericSnippetView(GenericAPIView):
