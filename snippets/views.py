@@ -3,6 +3,7 @@ from rest_framework import permissions
 from django.contrib.auth.models import User
 from snippets.models import Snippet
 from snippets.serializers import UserSerializer, SnippetSerializer
+from snippets.permissions import IsOwnerOrReadOnly
 
 
 class GenericUserView(GenericAPIView):
@@ -40,3 +41,4 @@ class SnippetDetail(GenericSnippetView, RetrieveUpdateDestroyAPIView):
     """
     Retrieve, update or delete a code snippet.
     """
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
